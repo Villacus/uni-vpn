@@ -29,7 +29,7 @@ time.sleep(0.5)
 
 # 4️⃣ Abrir Chrome para la autenticación 2FA
 os.system("start comet")
-time.sleep(1.5)  # Esperar a que cargue la ventana
+time.sleep(3)  # Esperar a que cargue la ventana
 
 # 5️⃣ Activar la extensión de Authenticator en Chrome y copiar el código
 pyautogui.hotkey("ctrl", "shift", "a")  # Ajusta si usas otro atajo
