@@ -21,7 +21,7 @@ if not config:
     exit(1)
 
 # Abrir FortiClient VPN
-forticlient_path = config.get("forticlient_path", r"C:\Program Files\Fortinet\FortiClient\FortiClientConsole.exe")
+forticlient_path = config.get("forticlient_path")
 subprocess.Popen([forticlient_path], shell=True)
 
 time.sleep(5)
@@ -29,9 +29,8 @@ time.sleep(5)
 # Asumimos que hay un perfil llamado "EHU" guardado en FortiClient
 # Pulsa TAB unas veces hasta llegar al botón "Conectar" (puedes ajustar el nº de TABs)
 
-pyautogui.press('tab')
-pyautogui.press('tab')
-pyautogui.press('tab')
+for _ in range(3):
+    pyautogui.press('tab')
 
 # Introducir usuario y contraseña
 usuario = config["usuario"]
