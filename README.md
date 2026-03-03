@@ -82,11 +82,7 @@ dotnet build -c Release
 **Publicar como ejecutable único (recomendado para distribución):**
 
 ```bash
-dotnet publish UniVpn.Automation/UniVpn.Automation.csproj \
-  -c Release -r win-x64 \
-  /p:PublishSingleFile=true \
-  /p:SelfContained=true \
-  -o publish/
+dotnet publish .\UniVpn.Automation\UniVpn.Automation.csproj -c Release -r win-x64 -o .\publish\ /p:PublishSingleFile=true /p:SelfContained=true
 ```
 
 El resultado será `publish/UniVpn.Automation.exe`.
