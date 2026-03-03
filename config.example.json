@@ -1,0 +1,55 @@
+{
+  // Full path to the FortiClient executable.
+  "FortiClientPath": "C:\\Program Files\\Fortinet\\FortiClient\\FortiClientConsole.exe",
+
+  // One or more substrings to match the FortiClient window title.
+  "WindowTitleSubstrings": ["FortiClient"],
+
+  // Name of the saved VPN profile inside FortiClient.
+  "ProfileName": "EHU",
+
+  // Polling interval (ms) between UI state checks.
+  "PollingIntervalMs": 500,
+
+  // How long (seconds) to wait for the FortiClient window to appear after launch.
+  "WindowWaitTimeoutSec": 30,
+
+  // How long (seconds) to wait for a full VPN connection to be established.
+  "ConnectionTimeoutSec": 120,
+
+  // Maximum number of connection retries on failure.
+  "MaxRetries": 3,
+
+  // How to obtain credentials.
+  //   "EnvironmentVariables"      – read from UNI_VPN_USERNAME and UNI_VPN_PASSWORD env vars (default).
+  //   "WindowsCredentialManager"  – read from the Windows Credential Manager store.
+  "CredentialMode": "EnvironmentVariables",
+
+  // Environment variable names used when CredentialMode = "EnvironmentVariables".
+  "UsernameEnvVar": "UNI_VPN_USERNAME",
+  "PasswordEnvVar": "UNI_VPN_PASSWORD",
+
+  // Windows Credential Manager target name used when CredentialMode = "WindowsCredentialManager".
+  // Store credentials with: cmdkey /generic:UniVpn/FortiClient /user:YOUR_USER /pass:YOUR_PASS
+  "CredentialManagerTarget": "UniVpn/FortiClient",
+
+  // Set to true ONLY if UIA discovery fails on your system and you need the
+  // send-keys fallback for filling form fields. Not recommended in production.
+  "UseFallbackSendKeys": false,
+
+  // Minimum log level: Trace | Debug | Information | Warning | Error | Critical | None
+  "LogLevel": "Information",
+
+  // UIA selectors – adjust these if your FortiClient version uses different control names.
+  "Selectors": {
+    "ConnectButtonName": "Connect",
+    "DisconnectButtonName": "Disconnect",
+    "UsernameFieldName": "Username",
+    "PasswordFieldName": "Password",
+    "TokenFieldName": "Token",
+    "ConnectingLabelText": "Connecting",
+    "ConnectedLabelText": "Connected",
+    "DisconnectedLabelText": "Connect",
+    "ErrorLabelText": "Error"
+  }
+}
