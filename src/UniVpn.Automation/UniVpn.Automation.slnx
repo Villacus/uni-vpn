@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="UniVpn.Automation.Core/UniVpn.Automation.Core.csproj" />
+  <Project Path="UniVpn.Automation.Tests/UniVpn.Automation.Tests.csproj" />
+  <Project Path="UniVpn.Automation/UniVpn.Automation.csproj" />
+</Solution>
