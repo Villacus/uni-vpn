@@ -40,7 +40,7 @@ config.example.json             # Plantilla de configuración
 
 - **.NET 8 SDK** (o superior): <https://dotnet.microsoft.com/download>
 - **Windows** (el ejecutable es exclusivo de Windows; los tests se pueden ejecutar en cualquier plataforma)
-- **FortiClient** instalado
+- **FortiClient** instalado — se requiere el ejecutable GUI (`FortiClient.exe`), **no** `FortiClientConsole.exe`
 
 ### 🔧 Configuración
 
@@ -164,7 +164,7 @@ pip install pyautogui pyperclip pygetwindow
 
 ### Software necesario
 
-- **FortiClient** instalado en `C:\Program Files\Fortinet\FortiClient\FortiClientConsole.exe`
+- **FortiClient** instalado en `C:\Program Files\Fortinet\FortiClient\FortiClient.exe`
 - **Navegador con extensión Authenticator** (Chrome/Comet)
 - **Python 3.7+**
 

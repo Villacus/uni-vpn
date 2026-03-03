@@ -62,6 +62,13 @@ public sealed class VpnStateMachine
             "Waiting for state {Target} (timeout: {Sec}s)…",
             targetState, timeout.TotalSeconds);
 
+        // Return immediately if we are already in the desired state.
+        if (CurrentState == targetState)
+        {
+            _logger.LogInformation("Already at target state {State}.", targetState);
+            return true;
+        }
+
         var deadline = DateTime.UtcNow + timeout;
         while (DateTime.UtcNow < deadline && !ct.IsCancellationRequested)
         {
@@ -78,6 +85,16 @@ public sealed class VpnStateMachine
             if (CurrentState is VpnState.Error or VpnState.Timeout)
             {
                 _logger.LogError("Aborting wait: state is {State}.", CurrentState);
+                return false;
+            }
+
+            // If the window disappears while we are waiting for a UI state, fail fast
+            // rather than burning the full timeout.
+            if (CurrentState == VpnState.NotRunning && targetState != VpnState.NotRunning)
+            {
+                _logger.LogError(
+                    "FortiClient window disappeared while waiting for {Target}. Aborting.",
+                    targetState);
                 return false;
             }
 

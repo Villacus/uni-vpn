@@ -1,6 +1,6 @@
 {
-  // Full path to the FortiClient executable.
-  "FortiClientPath": "C:\\Program Files\\Fortinet\\FortiClient\\FortiClientConsole.exe",
+  // Full path to the FortiClient GUI executable.
+  "FortiClientPath": "C:\\Program Files\\Fortinet\\FortiClient\\FortiClient.exe",
 
   // One or more substrings to match the FortiClient window title.
   "WindowTitleSubstrings": ["FortiClient"],

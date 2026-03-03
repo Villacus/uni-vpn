@@ -15,7 +15,7 @@ public class AppConfigTests
     {
         var config = new AppConfig();
         Assert.Equal(
-            @"C:\Program Files\Fortinet\FortiClient\FortiClientConsole.exe",
+            @"C:\Program Files\Fortinet\FortiClient\FortiClient.exe",
             config.FortiClientPath);
     }
 
