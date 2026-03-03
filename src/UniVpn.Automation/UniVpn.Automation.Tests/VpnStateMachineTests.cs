@@ -185,6 +185,55 @@ public class VpnStateMachineTests
         Assert.Equal(VpnState.Connected, sm.CurrentState);
     }
 
+    [Fact]
+    public void WaitForState_AlreadyAtTargetState_ReturnsTrueWithoutPolling()
+    {
+        // Arrange: detector always returns Connecting, but state machine is already
+        // at Disconnected. WaitForState should return true immediately without ever
+        // calling DetectState().
+        var detector = new Mock<IWindowDetector>();
+        detector.Setup(d => d.DetectState()).Returns(VpnState.Connecting);
+        detector.Setup(d => d.IsWindowVisible()).Returns(true);
+
+        var sm = CreateSm(detector.Object, new AppConfig { PollingIntervalMs = 10 });
+        // Force current state to Disconnected.
+        sm.Refresh();  // IsWindowVisible→true, DetectState→Connecting  → sets Connecting
+        // Re-configure so DetectState returns Disconnected, then Refresh again.
+        detector.Setup(d => d.DetectState()).Returns(VpnState.Disconnected);
+        sm.Refresh();  // → sets Disconnected
+
+        // Act: ask for Disconnected while already at Disconnected.
+        // DetectState should NOT be called again (reconfigure it to return a wrong value).
+        detector.Setup(d => d.DetectState()).Returns(VpnState.NotRunning);
+        var result = sm.WaitForState(VpnState.Disconnected, TimeSpan.FromSeconds(5));
+
+        Assert.True(result);
+        Assert.Equal(VpnState.Disconnected, sm.CurrentState);
+    }
+
+    [Fact]
+    public void WaitForState_WindowDisappears_AbortsAndReturnsFalse()
+    {
+        // Arrange: detector reports NotRunning immediately (window disappeared).
+        var detector = new Mock<IWindowDetector>();
+        detector.Setup(d => d.DetectState()).Returns(VpnState.NotRunning);
+
+        var sm = CreateSm(detector.Object, new AppConfig { PollingIntervalMs = 10 });
+        // Give the state machine a non-NotRunning starting state to simulate
+        // the window being visible before the wait starts.
+        detector.Setup(d => d.IsWindowVisible()).Returns(true);
+        detector.Setup(d => d.DetectState()).Returns(VpnState.Disconnected);
+        sm.Refresh();  // CurrentState = Disconnected
+
+        // Now the window "disappears"
+        detector.Setup(d => d.DetectState()).Returns(VpnState.NotRunning);
+
+        var result = sm.WaitForState(VpnState.Connected, TimeSpan.FromSeconds(5));
+
+        Assert.False(result);
+        Assert.Equal(VpnState.NotRunning, sm.CurrentState);
+    }
+
     // ── Cancellation ───────────────────────────────────────────────────────────
 
     [Fact]

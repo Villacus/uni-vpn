@@ -9,9 +9,9 @@ namespace UniVpn.Automation.Core.Configuration;
 /// </summary>
 public class AppConfig
 {
-    /// <summary>Full path to the FortiClient executable.</summary>
+    /// <summary>Full path to the FortiClient GUI executable.</summary>
     public string FortiClientPath { get; set; } =
-        @"C:\Program Files\Fortinet\FortiClient\FortiClientConsole.exe";
+        @"C:\Program Files\Fortinet\FortiClient\FortiClient.exe";
 
     /// <summary>One or more substrings that the FortiClient window title must contain.</summary>
     public string[] WindowTitleSubstrings { get; set; } = ["FortiClient"];

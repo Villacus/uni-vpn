@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using System.Windows.Automation;
 using Microsoft.Extensions.Logging;
 using UniVpn.Automation.Core.Configuration;
@@ -14,6 +15,18 @@ public sealed class WindowsUiaDetector : IWindowDetector
 {
     private readonly AppConfig _config;
     private readonly ILogger<WindowsUiaDetector> _logger;
+
+    // ── Win32 P/Invoke ─────────────────────────────────────────────────────────
+
+    [DllImport("user32.dll")]
+    private static extern bool SetForegroundWindow(IntPtr hWnd);
+
+    [DllImport("user32.dll")]
+    private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+    // SW_RESTORE: activates and restores a minimized window, or activates a
+    // normal/maximized window without changing its size/position.
+    private const int SW_RESTORE = 9;
 
     public WindowsUiaDetector(AppConfig config, ILogger<WindowsUiaDetector> logger)
     {
@@ -51,15 +64,26 @@ public sealed class WindowsUiaDetector : IWindowDetector
             return;
         }
 
+        var hwnd = new IntPtr(window.Current.NativeWindowHandle);
+        _logger.LogDebug(
+            "Bringing window to foreground: title='{Title}' pid={Pid} hwnd=0x{Hwnd:X}.",
+            window.Current.Name, window.Current.ProcessId, hwnd.ToInt64());
+
         try
         {
+            // Restore/show the window first (in case it is minimised).
+            ShowWindow(hwnd, SW_RESTORE);
+
+            // Win32 SetForegroundWindow is more reliable than UIA SetFocus alone.
+            SetForegroundWindow(hwnd);
+
+            // Also attempt via UIA WindowPattern for good measure.
             if (window.TryGetCurrentPattern(WindowPattern.Pattern, out var pattern)
                 && pattern is WindowPattern wp)
             {
                 wp.SetWindowVisualState(WindowVisualState.Normal);
             }
 
-            // SetFocus raises the window and focuses it.
             window.SetFocus();
             _logger.LogDebug("Brought FortiClient window to foreground.");
         }
@@ -84,8 +108,16 @@ public sealed class WindowsUiaDetector : IWindowDetector
             {
                 try
                 {
-                    if (child.Current.Name.Contains(titleSubstring, StringComparison.OrdinalIgnoreCase))
+                    var name = child.Current.Name;
+                    if (name.Contains(titleSubstring, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _logger.LogDebug(
+                            "Found window: title='{Title}' pid={Pid} hwnd=0x{Hwnd:X}.",
+                            name,
+                            child.Current.ProcessId,
+                            child.Current.NativeWindowHandle);
                         return child;
+                    }
                 }
                 catch (ElementNotAvailableException) { /* window closed mid-search */ }
             }
