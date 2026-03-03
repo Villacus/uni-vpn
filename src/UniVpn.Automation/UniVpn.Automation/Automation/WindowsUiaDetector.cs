@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using System.Windows.Automation;
 using Microsoft.Extensions.Logging;
 using UniVpn.Automation.Core.Configuration;
@@ -61,12 +62,52 @@ public sealed class WindowsUiaDetector : IWindowDetector
 
             // SetFocus raises the window and focuses it.
             window.SetFocus();
-            _logger.LogDebug("Brought FortiClient window to foreground.");
+            _logger.LogDebug("Brought FortiClient window to foreground (UIA SetFocus).");
         }
         catch (Exception ex) when (ex is InvalidOperationException or ElementNotAvailableException)
         {
-            _logger.LogWarning(ex, "Failed to bring FortiClient window to foreground.");
+            _logger.LogWarning(ex, "UIA SetFocus failed; falling back to Win32 SetForegroundWindow.");
+            BringToForegroundWin32(window);
         }
+    }
+
+    private void BringToForegroundWin32(AutomationElement window)
+    {
+        try
+        {
+            var hwnd = new IntPtr(window.Current.NativeWindowHandle);
+            if (hwnd == IntPtr.Zero)
+            {
+                _logger.LogWarning("Win32 foreground fallback skipped: NativeWindowHandle is zero. Proceeding without focus.");
+                return;
+            }
+
+            NativeMethods.ShowWindow(hwnd, NativeMethods.SW_RESTORE);
+            bool result = NativeMethods.SetForegroundWindow(hwnd);
+            if (result)
+                _logger.LogDebug("Brought FortiClient window to foreground (Win32 fallback).");
+            else
+                _logger.LogWarning(
+                    "Win32 SetForegroundWindow returned false (error {Error}); proceeding without guaranteed focus.",
+                    Marshal.GetLastWin32Error());
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Win32 foreground fallback also failed; proceeding without focus.");
+        }
+    }
+
+    private static class NativeMethods
+    {
+        internal const int SW_RESTORE = 9;
+
+        [DllImport("user32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool SetForegroundWindow(IntPtr hWnd);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
     }
 
     // ── Internal helpers ───────────────────────────────────────────────────────

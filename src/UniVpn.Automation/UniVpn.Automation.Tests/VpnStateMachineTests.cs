@@ -185,6 +185,22 @@ public class VpnStateMachineTests
         Assert.Equal(VpnState.Connected, sm.CurrentState);
     }
 
+    [Fact]
+    public void WaitForState_StuckAtNonTargetState_TimesOutAndSetsTimeout()
+    {
+        // Reproduces the root cause of the focus-hang: detector always returns
+        // CredentialsRequired but WaitForState is waiting for Disconnected.
+        // The loop must time out and CurrentState must end up as Timeout, NOT CredentialsRequired.
+        var detector = new Mock<IWindowDetector>();
+        detector.Setup(d => d.DetectState()).Returns(VpnState.CredentialsRequired);
+
+        var sm = CreateSm(detector.Object, new AppConfig { PollingIntervalMs = 10 });
+        var result = sm.WaitForState(VpnState.Disconnected, TimeSpan.FromMilliseconds(50));
+
+        Assert.False(result);
+        Assert.Equal(VpnState.Timeout, sm.CurrentState);
+    }
+
     // ── Cancellation ───────────────────────────────────────────────────────────
 
     [Fact]
