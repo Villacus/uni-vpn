@@ -110,8 +110,16 @@ public sealed class FortiClientAutomation
 
         // 4. Wait for the app to reach a state where we can act.
         var stateTimeout = TimeSpan.FromSeconds(_config.WindowWaitTimeoutSec);
-        bool ready = _stateMachine.WaitForState(VpnState.Disconnected, stateTimeout, ct)
-                  || _stateMachine.CurrentState == VpnState.CredentialsRequired;
+        _stateMachine.Refresh();
+        bool ready = _stateMachine.CurrentState is VpnState.Disconnected or VpnState.CredentialsRequired;
+        if (!ready)
+        {
+            ready = _stateMachine.WaitForState(VpnState.Disconnected, stateTimeout, ct);
+            // WaitForState transitions CurrentState to Timeout on expiry, so we re-detect
+            // the actual UI state to check whether we ended up at CredentialsRequired.
+            if (!ready && _stateMachine.Refresh() == VpnState.CredentialsRequired)
+                ready = true;
+        }
 
         if (!ready)
         {
